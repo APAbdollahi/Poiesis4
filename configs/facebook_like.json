@@ -28,6 +28,7 @@
   "agent_psychology": {
     "learning_rate": 0.004,
     "social_proof_effect_strength": 2.0,
-    "identity_fusion_pct": 0.1
+    "identity_fusion_pct": 0.1,
+    "original_opinion_pct": 0.8
   }
 }
