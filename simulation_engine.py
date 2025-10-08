@@ -193,7 +193,23 @@ class SimulationEngine:
     def get_stats(self):
         human_agents = [p for p in self.population if not p.is_bot];
         if not human_agents: return {}
+        
         belief_matrix = np.array([agent.belief_vector for agent in human_agents])
         dist_to_maj = np.linalg.norm(belief_matrix - self.config['majority_opinion_vector'], axis=1)
         dist_to_min = np.linalg.norm(belief_matrix - self.config['minority_opinion_vector'], axis=1)
-        return {"polarization_x": np.var(belief_matrix, axis=0)[0], "pct_in_majority_camp": np.mean(dist_to_maj < dist_to_min)}
+        
+        # Calculate Perception Gap
+        perception_gaps = []
+        for agent in human_agents:
+            if agent.exposure_log:
+                perceived_reality = np.mean(agent.exposure_log, axis=0)
+                gap = np.linalg.norm(agent.belief_vector - perceived_reality)
+                perception_gaps.append(gap)
+        
+        avg_perception_gap = np.mean(perception_gaps) if perception_gaps else 0
+        
+        return {
+            "polarization_x": np.var(belief_matrix, axis=0)[0],
+            "pct_in_majority_camp": np.mean(dist_to_maj < dist_to_min),
+            "reality_distortion_index": avg_perception_gap
+        }
