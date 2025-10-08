@@ -1,0 +1,33 @@
+{
+  "platform_name": "Facebook-like (The Social Graph)",
+  "description": "Models a platform where the social network is primary. Content from friends and groups is prioritized, leading to strong, slow-forming echo chambers.",
+  "engine_settings": {
+    "algorithm_class": "HybridFeedAlgorithm"
+  },
+  "world_generator": {
+    "population_config": {
+      "agent_propensities": {
+        "content_creation": 0.3,
+        "reply_vs_original": 0.6
+      }
+    },
+    "network_config": {
+      "network_type": "homophily_driven",
+      "homophily_threshold": 0.4,
+      "follow_propensity": 0.3
+    }
+  },
+  "algorithm_params": {
+    "discovery_feed_ratio": 0.2,
+    "weights": {
+      "w_personalization": 0.8,
+      "w_virality": 0.1,
+      "w_influence": 0.1
+    }
+  },
+  "agent_psychology": {
+    "learning_rate": 0.004,
+    "social_proof_effect_strength": 2.0,
+    "identity_fusion_pct": 0.1
+  }
+}

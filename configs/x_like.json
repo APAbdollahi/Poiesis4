@@ -1,0 +1,33 @@
+{
+  "platform_name": "X-like (The Town Square)",
+  "description": "Models a platform where real-time virality and cross-community interaction are high. The feed is a chaotic mix of social and algorithmic content.",
+  "engine_settings": {
+    "algorithm_class": "HybridFeedAlgorithm"
+  },
+  "world_generator": {
+    "population_config": {
+      "agent_propensities": {
+        "content_creation": 0.7,
+        "reply_vs_original": 0.4
+      }
+    },
+    "network_config": {
+      "network_type": "homophily_driven",
+      "homophily_threshold": 0.7,
+      "follow_propensity": 0.15
+    }
+  },
+  "algorithm_params": {
+    "discovery_feed_ratio": 0.5,
+    "weights": {
+      "w_personalization": 0.2,
+      "w_virality": 0.6,
+      "w_influence": 0.2
+    }
+  },
+  "agent_psychology": {
+    "learning_rate": 0.008,
+    "social_proof_effect_strength": 1.0,
+    "identity_fusion_pct": 0.1
+  }
+}
