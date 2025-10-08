@@ -66,6 +66,10 @@ class SocialGraph:
     def calculate_assortativity(self):
         return nx.degree_assortativity_coefficient(self._graph)
     def __getattr__(self, name):
+        # Do not forward dunder methods to the graph object.
+        # This prevents recursion errors with pickle.
+        if name.startswith('__') and name.endswith('__'):
+            raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
         return getattr(self._graph, name)
 
 class WorldGenerator:
