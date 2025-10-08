@@ -29,6 +29,7 @@
     "learning_rate": 0.008,
     "social_proof_effect_strength": 1.0,
     "identity_fusion_pct": 0.1,
-    "original_opinion_pct": 0.8
+    "original_opinion_pct": 0.8,
+    "posting_propensity": 0.3
   }
 }
