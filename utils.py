@@ -13,10 +13,27 @@ import networkx as nx
 
 @st.cache_data
 def load_platform_configs(config_dir="configs"):
+    """
+    Loads platform configurations from JSON files in the specified directory.
+
+    Args:
+        config_dir (str): The name of the configuration directory.
+
+    Returns:
+        dict: A dictionary of platform configurations.
+    """
     configs = {}
-    for filename in os.listdir(config_dir):
+    # Construct an absolute path to the configs directory
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    abs_config_dir = os.path.join(base_dir, config_dir)
+
+    if not os.path.isdir(abs_config_dir):
+        st.error(f"Configuration directory not found at: {abs_config_dir}")
+        return {}
+
+    for filename in os.listdir(abs_config_dir):
         if filename.endswith(".json"):
-            with open(os.path.join(config_dir, filename), 'r') as f:
+            with open(os.path.join(abs_config_dir, filename), 'r') as f:
                 config = json.load(f)
                 configs[config['platform_name']] = config
     return configs
