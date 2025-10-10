@@ -55,7 +55,7 @@ else:
                 if len(param_path) == 2: run_config[param_path[0]][param_path[1]] = value
                 elif len(param_path) == 3: run_config[param_path[0]][param_path[1]][param_path[2]] = value
                 
-                results = run_full_simulation(run_config, 30, random.randint(1,1e9))
+                results = run_full_simulation(run_config, 30, random.randint(1, 1000000000))
                 trial_outcomes.append(results['history_df']['pct_in_majority_camp'].iloc[-1])
                 progress_bar.progress(current_run / total_runs)
 
