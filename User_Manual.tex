@@ -1,0 +1,193 @@
+\documentclass[11pt, a4paper]{article}
+
+% Preamble: Packages and Configuration
+
+% --- Page Layout ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+% --- Typography and Color ---
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{lmodern} % Use the Latin Modern font
+\usepackage{amsmath} % For mathematical expressions
+
+% --- Custom Colors ---
+\definecolor{primary}{HTML}{2E86C1}
+\definecolor{secondary}{HTML}{17202A}
+\definecolor{lightgray}{HTML}{F2F3F4}
+
+% --- Hyperlink Setup ---
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primary,
+    urlcolor=blue,
+    citecolor=primary,
+}
+
+% --- Title and Section Formatting ---
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{primary}}
+  {\thesection.}
+  {1em}
+  {}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{secondary}}
+  {\thesubsection}
+  {1em}
+  {}
+\titleformat{\subsubsection}
+  {\normalfont\bfseries}
+  {\thesubsubsection}
+  {1em}
+  {}
+\titlespacing*{\section}{0pt}{1.5\baselineskip}{1\baselineskip}
+\titlespacing*{\subsection}{0pt}{1\baselineskip}{0.5\baselineskip}
+
+% --- List Customization ---
+\usepackage{enumitem}
+\setlist[itemize]{leftmargin=*}
+\setlist[enumerate]{leftmargin=*}
+
+% --- Document Title ---
+\title{\bfseries Digital Poiesis Laboratory: User Manual}
+\author{}
+\date{}
+
+
+% --- The Document ---
+\begin{document}
+
+\maketitle
+\thispagestyle{empty} % No page number on the title page
+
+\begin{abstract}
+\noindent This application is an interactive "flight simulator" designed to make the invisible "secret laws" of social media platforms visible and understandable. It uses an agent-based model to simulate an online social network, allowing you to see how different algorithms, platform designs, and strategic interventions can shape public opinion. The goal is not to predict the future, but to build a deep, mechanistic intuition about how social realities are constructed and contested in the digital age.
+\end{abstract}
+
+\newpage
+\tableofcontents
+\newpage
+
+\section{Introduction: A Flight Simulator for Digital Policy}
+
+Welcome to the Digital Poiesis Laboratory. The laboratory is structured as a clear, step-by-step workflow, reflected by the pages in the sidebar.
+
+\section{The Workflow: A Step-by-Step Guide}
+
+\subsection{Page 1: The Digital Society}
+
+This is where you define the fundamental "physics" of your digital world.
+
+\subsubsection*{Purpose}
+To choose a social media platform archetype. Each archetype has a different combination of network structure, algorithmic priorities, and agent psychology, modeling the distinct dynamics of real-world platforms.
+
+\subsubsection*{How to Use}
+\begin{enumerate}
+    \item Use the \textbf{"Choose a Platform Archetype"} dropdown in the sidebar to select a world.
+    \item Review the core parameters displayed on the page to understand the environment you've selected.
+    \begin{itemize}
+        \item \textbf{Agent Psychology:} Describes the default psychological traits of the agents in this world (e.g., their learning rate, how many start with a fused identity).
+        \item \textbf{Algorithmic Priorities:} Shows the default weights the platform's algorithm gives to different factors when ranking content.
+        \item \textbf{Network Structure:} Describes how the social network is wired (e.g., is it an "echo chamber" where like-minded people connect?).
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Page 2: The Strategic Operations Center}
+
+This is your command center for designing and running an influence campaign.
+
+\subsubsection{Day 0 Preview}
+Before launching a campaign, this section shows you the initial state of the world you've configured.
+\begin{itemize}
+    \item \textbf{Initial Belief Distribution:} A scatter plot showing the starting opinions of all the agents.
+    \item \textbf{Social Network Structure:} A graph showing who is connected to whom. The colors indicate the agents' initial beliefs, allowing you to immediately see ideological clusters and potential echo chambers.
+    \item \textbf{Metrics:}
+    \begin{itemize}
+        \item \textbf{Number of Agents:} The total population size (\textit{N}).
+        \item \textbf{Number of Social Links:} The total number of "follow" connections in the network.
+        \item \textbf{Network Assortativity:} A score that measures how much agents tend to connect to other agents with similar beliefs. A high positive value indicates a strong echo chamber effect.
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Algorithm Tuner \& Campaign Strategy}
+This is where you define your intervention.
+\begin{itemize}
+    \item \textbf{Core Algorithm Weights:} These sliders allow you to override the platform's default algorithm.
+    \begin{itemize}
+        \item \texttt{w\_personalization}: How much to prioritize content that matches an agent's existing beliefs.
+        \item \texttt{w\_virality}: How much to prioritize content that is getting a lot of engagement (likes).
+        \item \texttt{w\_influence}: How much to prioritize content from users who are already influential.
+    \end{itemize}
+    \item \textbf{Strategic Campaign:}
+    \begin{itemize}
+        \item \textbf{Campaign Objective:} Choose your goal. Options include \textit{Offensive} (attempt to flip the majority opinion) and \textit{Defensive} (attempt to "lock in" the majority opinion).
+        \item \textbf{Playbook:} Based on your objective, a playbook of strategic tools becomes available, such as \texttt{Targeted Amplification}, \texttt{Bot Network Size}, \texttt{Kingmaker Effect}, and \texttt{Radicalize Majority}.
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{General Controls (Sidebar)}
+\begin{itemize}
+    \item \textbf{\texttt{Campaign Duration}:} How many cycles the simulation will run for.
+    \item \textbf{\texttt{N (Participants)}:} The total number of agents in the simulation.
+\end{itemize}
+
+\subsection{Page 3: Post-Mortem Analysis}
+
+This is where you analyze the results of your campaign to understand \textit{why} it succeeded or failed.
+
+\subsubsection{Outcome Overview}
+\begin{itemize}
+    \item \textbf{Final Opinion Landscape:} Shows the belief of every agent at the end of the simulation.
+    \item \textbf{Opinion \& Key Metrics Evolution:} Includes charts for the \textit{Evolution of Public Opinion} and the \textit{Evolution of Reality Distortion}.
+\end{itemize}
+
+\subsubsection{Deep Analysis}
+\begin{itemize}
+    \item \textbf{The Perception Gap (Scatter Plot):} Compares agents' final beliefs to the average opinion of the content they were shown.
+    \item \textbf{Agent Belief Trajectories:} Shows the paths a sample of individual agents took through the belief space.
+\end{itemize}
+
+\subsubsection{Agent Drill-Down}
+This is the most granular view, allowing you to inspect a single agent's experience by selecting an agent ID. It includes their stat sheet, belief trajectory, and a heatmap showing the ideological landscape of the content they were exposed to.
+
+\subsubsection{A/B Testing}
+After a run, you can pin it as a control or treatment, change parameters, run a new campaign, and compare the outcomes and the final Reality Distortion Index for each run.
+
+\subsection{Page 4: Experiment Designer}
+
+This page allows you to run automated, systematic experiments to test the impact of a single parameter across a range of values to find tipping points.
+
+\section{Advanced Use: Understanding the Configuration Files}
+The platform archetypes are defined in the \texttt{.json} files located in the \texttt{configs/} directory. You can edit these or create new ones to model different kinds of digital worlds. The key sections are:
+\begin{itemize}
+    \item \texttt{world\_generator}: Defines the network structure (e.g., \texttt{homophily\_threshold}) and agent population.
+    \item \texttt{algorithm\_params}: Defines the default behavior of the content algorithm, including the crucial \texttt{weights}.
+    \item \texttt{agent\_psychology}: Defines the default psychological makeup of the agents, such as their \texttt{learning\_rate} and \texttt{posting\_propensity}.
+\end{itemize}
+
+\section{Glossary of Key Terms}
+
+This glossary defines the core concepts of the Digital Poiesis Laboratory, explaining how they are modeled in the simulation and connecting them to established academic research where applicable.
+
+\begin{description}[style=unboxed, leftmargin=0.5cm]
+    \item[Agent-Based Model (ABM)] A computational modeling technique that simulates the actions and interactions of autonomous agents to understand the behavior of a system as a whole. In this simulation, large-scale outcomes (like opinion shifts) are not programmed directly; they \textit{emerge} from the simple, repeated interactions of many agents.
+    
+    \item[Belief Vector] A pair of numbers (e.g., $[0.8, -0.2]$) that represents an agent's opinion on two perpendicular topics. This is the core internal state of an agent.
+    
+    \item[Homophily \& Network Assortativity] Homophily is the principle that individuals tend to associate with similar others. In the simulation, this is controlled by the \texttt{homophily\_threshold} parameter. Network Assortativity is the metric that measures this effect. This models the well-documented principle that "birds of a feather flock together" (McPherson, Smith-Lovin, \& Cook, 2001).
+    
+    \item[Echo Chamber / Filter Bubble] An environment where a person is primarily exposed to information that reinforces their own beliefs. This is an emergent property resulting from the combination of \textbf{Homophily} and an algorithm with high \textbf{Personalization}.
+    
+    \item[Perception Gap \& The Reality Distortion Index] The "Perception Gap" is the difference between an agent's internal belief and the average belief represented by the content they are shown. We average this across the population to create the \textbf{Reality Distortion Index}. A high index value indicates a significant degree of algorithmic manipulation.
+    
+    \item[Identity Fusion] A profound sense of "oneness" with a group or a belief, making that belief central to an agent's sense of self. Fused agents are highly resistant to changing their minds. This is based on the psychological theory of Identity Fusion (Swann et al.).
+    
+    \item[Kingmaker Effect] A strategy that focuses on massively amplifying the visibility of a few individuals already aligned with a target narrative. The \texttt{Kingmaker Effect} slider multiplies the \texttt{creator\_influence\_score} of a small number of agents, making their content far more likely to be promoted.
+\end{description}
+
+\end{document}

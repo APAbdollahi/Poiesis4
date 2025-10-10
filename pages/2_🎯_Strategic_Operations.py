@@ -20,25 +20,30 @@ else:
     st.sidebar.header("General Controls")
     num_cycles = st.sidebar.slider('Campaign Duration (Cycles)', 10, 100, 30, 5)
     N = st.sidebar.slider('N (Participants)', 100, 500, 200, 50)
+    user_seed = st.sidebar.number_input('Master Random Seed (leave blank for random)', min_value=0, max_value=2**32 - 1, value=None, step=1)
+    if user_seed is None:
+        master_seed = random.randint(0, 2**32 - 1)
+    else:
+        master_seed = int(user_seed)
 
     # --- Day 0 Preview ---
     with st.expander("Show Day 0 Preview of the Digital Society", expanded=True):
         st.subheader("Initial State of the World (Before Campaign)")
         
         @st.cache_data(show_spinner="Generating preview...")
-        def generate_preview_world(_config, _N):
+        def generate_preview_world(_config, _N, _master_seed):
             generator = WorldGenerator()
             config_copy = _config.copy()
             config_copy['N'] = _N
-            population, social_graph = generator.create_world(_N, config_copy)
-            sim_preview = SimulationEngine(population, social_graph, config_copy)
+            population, social_graph = generator.create_world(_N, config_copy, _master_seed)
+            sim_preview = SimulationEngine(population, social_graph, config_copy, _master_seed)
             return sim_preview
 
         preview_config = st.session_state.config.copy()
         preview_config['majority_opinion_vector'] = [0.5, 0.1]
         preview_config['minority_opinion_vector'] = [-0.5, -0.1]
         
-        sim_preview = generate_preview_world(preview_config, N)
+        sim_preview = generate_preview_world(preview_config, N, master_seed)
 
         m_col1, m_col2, m_col3 = st.columns(3)
         m_col1.metric("Number of Agents", sim_preview.N)
@@ -110,7 +115,7 @@ else:
         full_config['minority_opinion_vector'] = [-0.5, -0.1]
         
         with st.spinner(f'Executing "{campaign_mode}" campaign...'):
-            results = run_full_simulation(full_config, num_cycles, random.randint(1, 1e9))
+            results = run_full_simulation(full_config, num_cycles, master_seed)
             st.session_state.simulation_results = results
             st.session_state.last_campaign_mode = campaign_mode
 

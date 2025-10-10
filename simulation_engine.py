@@ -7,6 +7,8 @@ from scipy.spatial.distance import cosine
 import networkx as nx
 from typing import List, Dict, Any
 from enum import Enum
+from scipy.spatial import KDTree
+from abc import ABC, abstractmethod
 
 class ContentType(Enum):
     TEXT = 1
@@ -73,7 +75,10 @@ class SocialGraph:
         return getattr(self._graph, name)
 
 class WorldGenerator:
-    def create_world(self, N, config):
+    def create_world(self, N, config, master_seed):
+        random.seed(master_seed)
+        np.random.seed(master_seed)
+
         # Create Population
         pop_config = config['world_generator']['population_config']
         belief_config = {'majority_opinion_vector': config['majority_opinion_vector'], 'minority_opinion_vector': config['minority_opinion_vector'], 'original_opinion_pct': config['agent_psychology']['original_opinion_pct']}
@@ -109,11 +114,21 @@ class WorldGenerator:
     def _create_network(self, population, net_config):
         graph = SocialGraph()
         for agent in population: graph.add_agent(agent.agent_id)
+
         if net_config['network_type'] == 'homophily_driven':
+            belief_vectors = np.array([agent.belief_vector for agent in population])
+            tree = KDTree(belief_vectors)
+
             for agent1 in population:
-                for agent2 in population:
-                    if agent1.agent_id != agent2.agent_id and cosine(agent1.belief_vector, agent2.belief_vector) < net_config['homophily_threshold']:
-                        if random.random() < net_config['follow_propensity']: graph.add_follow_edge(agent1.agent_id, agent2.agent_id)
+                # Find all agents within the homophily_threshold distance
+                # r_query returns indices of points within r of a given point
+                indices = tree.query_ball_point(agent1.belief_vector, r=net_config['homophily_threshold'])
+                
+                for idx in indices:
+                    agent2 = population[idx]
+                    if agent1.agent_id != agent2.agent_id:
+                        if random.random() < net_config['follow_propensity']:
+                            graph.add_follow_edge(agent1.agent_id, agent2.agent_id)
         return graph
 
 class BaseAlgorithm:
@@ -138,7 +153,10 @@ class HybridFeedAlgorithm(BaseAlgorithm):
 ALGORITHM_REGISTRY = {"HybridFeedAlgorithm": HybridFeedAlgorithm}
 
 class SimulationEngine:
-    def __init__(self, population, social_graph, config):
+    def __init__(self, population, social_graph, config, master_seed):
+        random.seed(master_seed)
+        np.random.seed(master_seed)
+
         self.population = population; self.social_graph = social_graph; self.config = config
         self.N = len(population)
         algorithm_class = ALGORITHM_REGISTRY[config['engine_settings']['algorithm_class']]

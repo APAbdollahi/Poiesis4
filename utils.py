@@ -27,10 +27,10 @@ def initialize_session_state():
     if 'config' not in st.session_state: st.session_state.config = None
 
 @st.cache_data(show_spinner=False)
-def run_full_simulation(config, num_cycles, _run_id):
+def run_full_simulation(config, num_cycles, master_seed):
     generator = WorldGenerator()
-    population, social_graph = generator.create_world(config['N'], config)
-    sim = SimulationEngine(population, social_graph, config)
+    population, social_graph = generator.create_world(config['N'], config, master_seed)
+    sim = SimulationEngine(population, social_graph, config, master_seed)
     history = []
     agent_sample = [p for p in np.random.choice(sim.population, size=min(30, sim.N), replace=False) if not p.is_bot]
     trajectory_log = {agent.agent_id: [] for agent in agent_sample}
@@ -145,9 +145,8 @@ def plotly_network_graph(sim_state):
             size=10,
             colorbar=dict(
                 thickness=15,
-                title='Belief (Topic X)',
-                xanchor='left',
-                titleside='right'
+                title=dict(text='Belief (Topic X)', side='right'),
+                xanchor='left'
             ),
             line_width=2))
     
@@ -155,8 +154,7 @@ def plotly_network_graph(sim_state):
 
     fig = go.Figure(data=[edge_trace, node_trace],
                  layout=go.Layout(
-                    title='Social Network Structure',
-                    titlefont_size=16,
+                    title=dict(text='Social Network Structure', font=dict(size=16)),
                     showlegend=False,
                     hovermode='closest',
                     margin=dict(b=20,l=5,r=5,t=40),
