@@ -1,160 +1,258 @@
-\documentclass[10pt,a4paper]{article}
-\usepackage[utf8]{inputenc}
+\documentclass[11pt]{article}
+\usepackage{geometry}
+\geometry{margin=1in}
 \usepackage{amsmath}
-\usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage{graphicx}
-\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
-\usepackage[numbers]{natbib} % For numeric citations
-\usepackage{authblk} % For author affiliations
+\usepackage{hyperref}
+\usepackage{natbib}
 
-% Custom commands for the model
-\newcommand{\belief}{\mathbf{B}}
-\newcommand{\contentvec}{\mathbf{C}}
-\newcommand{\learningrate}{\lambda}
-\newcommand{\conviction}{\kappa}
-\newcommand{\wpers}{w_{\text{pers}}}
-\newcommand{\wviral}{w_{\text{viral}}}
-\newcommand{\winflu}{w_{\text{influ}}}
-\newcommand{\Spers}{S_{\text{pers}}}
-\newcommand{\Sviral}{S_{\text{viral}}}
-\newcommand{\Sinflu}{S_{\text{influ}}}
-\newcommand{\betaamp}{\beta_{\text{amp}}}
-\newcommand{\Starget}{\mathbf{T}}
-\begin{document}
-\end{document}
 \title{The Digital Poiesis Laboratory: An Agent-Based Model for Exploring Algorithmic Influence on Opinion Dynamics}
-\author[\thanks{Corresponding Author: Pasha Abdollahi}]{Pasha}
-\affil[ ]{Insight Galaxy Ltd.}
-\date{\today}
+
+\author{Ali Pasha Abdollahi$^{*}$ \and Farzaneh Khandani$^{*}$ \\
+*Insight Galaxy Ltd.\\
+$^*$Corresponding Author: \href{mailto:Ali.abdollahi@alumni.manchester.ac.uk}{Ali.abdollahi@alumni.manchester.ac.uk}}
+
+\date{October 11, 2025}
 
 \begin{document}
 
 \maketitle
 
 \begin{abstract}
-The pervasive influence of social media algorithms on public opinion and the formation of social realities necessitates transparent and accessible tools for exploration and analysis. This paper formally introduces the Digital Poiesis Laboratory, an interactive agent-based modeling (ABM) framework designed to demystify the mechanisms of online opinion formation and algorithmic influence. We detail the model's core components, including agent psychology, network structure, and a hybrid algorithmic feed model, presenting the underlying mathematical formulations. The paper also describes the laboratory's user interface, which serves as an exploratory instrument for policymakers, researchers, and the informed public. Through a use case comparing "Facebook-like" and "X-like" platform archetypes, we demonstrate the model's utility in building mechanistic intuition about how algorithmic control shapes perception and opinion dynamics. We conclude by discussing the model's current limitations and outlining avenues for future research.
+The pervasive influence of social media algorithms on public opinion and the formation of social realities necessitates transparent and accessible tools for exploration and analysis. This paper formally introduces the Digital Poiesis Laboratory, an interactive agent-based modeling (ABM) framework designed to demystify the mechanisms of online opinion formation and algorithmic influence. We detail the model’s core components—including agent psychology grounded in identity fusion theory, homophily-driven network structures, and a novel hybrid algorithmic feed model—presenting the underlying mathematical formulations. We also describe the laboratory’s open-source user interface, which serves as an exploratory instrument for policymakers, researchers, and the informed public. Through an illustrative use case comparing ``Facebook-like'' and ``X-like'' platform archetypes, we demonstrate the model’s utility in building mechanistic intuition about how algorithmic control shapes perception and opinion dynamics. We conclude by discussing the model’s current limitations and outlining a clear agenda for future research, including extensions for dynamic networks and empirical calibration.
+
+Keywords: Agent-Based Modeling, Opinion Dynamics, Algorithmic Amplification, Computational Social Science, Polarization, Social Simulation.
 \end{abstract}
 
 \section{Introduction}
-The digital public sphere has become a primary arena for opinion formation, social discourse, and political mobilization. Central to this transformation are the proprietary algorithms employed by social media platforms, which curate information flows and significantly influence what users see, hear, and believe \citep{algorithmic_amplification}. The opacity of these "secret laws" governing content visibility poses a substantial challenge to democratic discourse, fostering concerns about echo chambers, filter bubbles, and the potential for targeted manipulation \citep{pariser2011filter}.
 
-To address this challenge, we introduce the Digital Poiesis Laboratory, an interactive agent-based modeling (ABM) framework. Poiesis, from the Ancient Greek, refers to "making" or "creation," reflecting the laboratory's purpose: to explore how digital realities are constructed. The laboratory functions as a "flight simulator" for digital policy, offering a transparent and auditable environment to investigate the consequences of platform design and strategic interventions. Its primary contribution lies not in predictive accuracy, but in fostering a deep, mechanistic intuition about the complex, non-linear dynamics of online social systems.
+The digital public sphere has become a primary arena for opinion formation, social discourse, and political mobilization [2]. Central to this transformation are the proprietary and opaque algorithms employed by social media platforms, which curate information flows and significantly influence what users see, hear, and believe [8]. The opacity of these ``secret laws'' governing content visibility poses a substantial challenge to democratic discourse, fostering well-documented concerns about echo chambers, filter bubbles, and the potential for targeted manipulation [18, 19].
 
-This paper is structured as follows: Section \ref{sec:lit_review} provides a review of relevant literature. Section \ref{sec:model} formally details the agent-based model. Section \ref{sec:interface} describes the interactive user interface. Section \ref{sec:use_case} presents a use case demonstrating the model's utility. Finally, Section \ref{sec:discussion} discusses limitations and future work, and Section \ref{sec:conclusion} concludes the paper.
+To address this challenge, we introduce the Digital Poiesis Laboratory, an interactive agent-based modeling (ABM) framework. Poiesis, from the Ancient Greek, refers to ``making'' or ``creation,'' reflecting the laboratory’s purpose: to explore how digital social realities are constructed and contested [4]. The laboratory functions as a ``flight simulator'' for digital policy, offering a transparent and auditable environment to investigate the consequences of platform design and strategic interventions. Its primary contribution lies not in predictive accuracy, but in fostering a deep, mechanistic intuition about the complex, non-linear dynamics of online social systems [9].
+
+This paper makes the following contributions:
+
+1. We formalize a novel agent-based model that integrates multi-dimensional belief vectors, psychological traits including identity fusion, and a modular, hybrid algorithmic feed model.
+
+2. We introduce a specific mechanism, Targeted Amplification ($\beta_{amp}$), to explicitly model a platform’s non-neutral promotion or suppression of specific ideological content.
+
+3. We present an open-source, interactive interface that transforms the model into an accessible ``laboratory,'' enabling rapid hypothesis testing and systematic experimentation for a non-technical audience.
+
+This paper is structured as follows: Section 2 reviews relevant literature. Section 3 formally details the agent-based model. Section 4 describes the interactive user interface. Section 5 presents an illustrative use case. Section 6 discusses limitations and future work, and Section 7 concludes the paper.
 
 \section{Literature Review}
-\label{sec:lit_review}
-The study of opinion dynamics has a rich interdisciplinary history, drawing from physics, sociology, and computer science \citep{opinion_dynamics_review}. Agent-based models (ABMs) have emerged as a powerful methodology for understanding how individual attitudes, beliefs, and opinions evolve under social influence \citep{opinion_dynamics_abm_review}. Early models, such as the Voter Model \citep{voter_model} and the Sznajd Model \citep{sznajd_model}, explored how local interactions can lead to global consensus or polarization. Bounded confidence models, like those by Deffuant et al. \citep{deffuant2000mixing} and Hegselmann and Krause \citep{hegselmann2002opinion}, introduced the concept that agents only interact with others whose opinions fall within a certain "confidence interval," leading to fragmentation and persistent disagreement.
 
-The rise of social media has amplified concerns about information environments. Eli Pariser's seminal work, "The Filter Bubble," highlighted how personalized algorithms can create unique, insular information universes for users, limiting exposure to diverse viewpoints \citep{pariser2011filter}. This phenomenon, alongside the formation of "echo chambers," is widely recognized as contributing to increased political polarization and the spread of misinformation \citep{algorithmic_amplification}. Research on algorithmic amplification specifically investigates how platform algorithms, often optimized for engagement, can inadvertently or intentionally boost certain political content, leading to biased exposure and reinforcing existing ideological divides \citep{algorithmic_amplification_political}.
+This work is situated at the intersection of three research domains: opinion dynamics, network science, and the study of algorithmic systems.
 
-Furthermore, the psychological underpinnings of group behavior and belief resilience are crucial. \textbf{Identity Fusion Theory}, developed by William B. Swann Jr. and colleagues, describes a profound "visceral sense of 'oneness'" an individual feels with a group, motivating extreme pro-group behaviors, including self-sacrifice \citep{swann_identity_fusion}. This concept is particularly relevant in understanding why certain individuals or groups become highly resistant to opinion change, even when confronted with contradictory information.
+The study of opinion dynamics has a rich interdisciplinary history, drawing from physics, sociology, and computer science [5]. Agent-based models (ABMs) have emerged as a powerful methodology for understanding how individual attitudes evolve under social influence [10]. Early physics-inspired models, such as the Voter Model [12] and the Sznajd Model [21], explored how simple, local rules of interaction can lead to global consensus or polarization. Bounded confidence models, like those by Deffuant et al. [7] and Hegselmann and Krause [11], introduced the psychologically plausible concept that agents are only influenced by others whose opinions fall within a certain ``confidence interval,'' providing a mechanism for opinion clustering and fragmentation.
 
-The Digital Poiesis Laboratory builds upon these foundational concepts, integrating elements of network structure, algorithmic curation, and agent psychology within an interactive ABM framework to explore their combined effects.
+The structure of social interactions is governed by principles from network science. The principle of homophily—the tendency for individuals to associate with similar others—is one of the most persistent findings in social science [15]. In online environments, this can lead to ideological segregation and the formation of ``echo chambers,'' where individuals are predominantly exposed to belief-confirming information from like-minded peers [1,19].
+
+The rise of social media platforms has introduced a powerful new actor into these dynamics: the curation algorithm. Eli Pariser’s seminal work, ``The Filter Bubble,'' highlighted how personalized algorithms can create unique, insular information universes for users, limiting exposure to diverse viewpoints [18]. A growing body of research on algorithmic amplification investigates how platform algorithms, often optimized for user engagement, can inadvertently or intentionally boost polarizing, extreme, or low-quality content, leading to biased exposure and reinforcing ideological divides [6, 8].
+
+Finally, the psychological underpinnings of belief resilience are crucial. While many models assume rational belief updates, cognitive science points to powerful biases, such as confirmation bias [16] and motivated reasoning [14]. Identity Fusion Theory, developed by William B. Swann Jr. and colleagues, is particularly relevant. It describes a profound ``visceral sense of 'oneness''' an individual feels with a group, making their beliefs highly resistant to change and motivating extreme pro-group behaviors [20].
+
+The Digital Poiesis Laboratory integrates these foundational concepts, combining a homophily-driven network structure with an explicit model of algorithmic curation and agent psychology that accounts for identity fusion.
 
 \section{The Model}
-\label{sec:model}
-The Digital Poiesis Laboratory is built around a discrete-time agent-based model. The simulation progresses in "cycles," during which agents interact, create content, consume content, and update their beliefs.
+
+The laboratory is built around a discrete-time ABM where the simulation progresses in cycles.
 
 \subsection{Core Components and Assumptions}
+
 The model comprises three primary entities: Agents, Content, and a Social Graph.
 
 \subsubsection{Agents}
-Agents represent individual users within the simulated social network. Each agent $i$ is characterized by:
-\begin{itemize}
-    \item A unique identifier, $agent\_id$.
-    \item A \textbf{Belief Vector} $\belief_i = [B_{i,x}, B_{i,y}] \in [-1, 1]^2$, representing their opinion on two orthogonal topics (X and Y). Values closer to 1 indicate strong agreement with "Camp A," while values closer to -1 indicate strong agreement with "Camp B."
-    \item \textbf{Psychology} parameters, including:
-    \begin{itemize}
-        \item $\learningrate_i$: A learning rate, determining how quickly an agent's belief changes upon exposure to new content.
-        \item $\conviction_i$: A conviction level, inversely affecting their susceptibility to opinion change.
-        \item $is\_identity\_belief_i$: A boolean flag indicating if the agent's belief is "fused" with their identity, making them highly resistant to change.
-    \end{itemize}
-    \item \textbf{Propensities}, such as $posting\_propensity_i$, the likelihood of creating content in a given cycle.
-    \item A \textbf{Platform Profile}, including an $inferred\_belief\_vector_i$ (the platform's estimation of their belief) and a $creator\_influence\_score_i$ (reflecting their perceived influence).
-\end{itemize}
-A key assumption is that beliefs can be represented in a continuous, multi-dimensional space, and that agents update their beliefs based on the content they consume.
+
+Agents represent users. Each agent $i$ is characterized by:
+
+• A Belief Vector $B_i = [B_{i,x}, B_{i,y}] \in [-1, 1]^2$, representing their opinion on two orthogonal topics. The vector space allows for nuanced positions beyond a simple left-right spectrum.
+
+• Psychology parameters:
+
+– Learning rate $\lambda_i \in [0, 1]$: Determines the magnitude of belief change upon exposure to content.
+
+– Conviction $\kappa_i \geq 1$: Inversely affects susceptibility to opinion change, acting as an inertia term.
+
+– $is\_identity\_fused_i \in \{0, 1\}$: A binary flag indicating if the agent’s belief is fused with their identity, making them completely resistant to persuasion (i.e., $\lambda_i = 0$ if fused).
+
+• Propensities, such as $posting\_propensity_i$, the probability of creating content in a given cycle.
+
+• A Platform Profile, including an $inferred\_belief\_vector_i$ and a $creator\_influence\_score_i$.
 
 \subsubsection{Content}
-Content represents a discrete piece of information (e.g., a post, an article). Each content item $c$ is characterized by:
-\begin{itemize}
-    \item A unique identifier, $content\_id$.
-    \item The $creator\_id$ of the agent who generated it.
-    \item A \textbf{Topic Vector} $\contentvec_c = [C_{c,x}, C_{c,y}] \in [-1, 1]^2$, representing the ideological stance of the content, mapped to the same belief space as agents.
-    \item An $engagement$ dictionary, tracking interactions such as likes, dislikes, and shares.
-\end{itemize}
-The model assumes that content can be accurately represented by its ideological stance within the defined belief space.
 
-\subsubsection{Social Graph}
-The social graph represents the network of "follow" relationships between agents.
-\begin{itemize}
-    \item It is a directed graph, where an edge from agent $A$ to agent $B$ means $A$ follows $B$.
-    \item The network is generated based on \textbf{homophily}, where agents are more likely to form connections with others whose initial belief vectors are similar.
-\end{itemize}
-The current model assumes a static network structure, meaning connections do not change during a simulation run.
+Content items $c$ represent discrete pieces of information. Each is characterized by:
+
+• A creator id of the agent who generated it.
+
+• A Topic Vector $C_c = [C_{c,x}, C_{c,y}] \in [-1, 1]^2$, representing the ideological stance of the content, mapped to the same belief space as agents.
+
+A key assumption is that the ideological position of content can be represented as a point in this shared multi-dimensional space.
+
+\subsubsection{Social Graph and Network Generation}
+
+The social graph is a directed graph $G = (V, E)$, where $V$ is the set of agents and a directed edge $(i, j) \in E$ means agent $i$ ``follows'' agent $j$. The network is generated based on homophily [15]. For any two agents $i$ and $j$, a follow link $(i, j)$ is created with a probability that is a decreasing function of the Euclidean distance between their initial belief vectors $\Vert B_i - B_j \Vert$. This results in a network with ideological clusters. The current model assumes a static network structure.
 
 \subsection{The Simulation Engine and Event Loop}
-The \texttt{SimulationEngine} orchestrates the simulation, progressing through discrete time steps (cycles). In each cycle $t$:
-\begin{enumerate}
-    \item \textbf{Content Creation:} A subset of agents (determined by their $posting\_propensity$) create new content. The topic vector of this content is typically aligned with the creating agent's current belief vector.
-    \item \textbf{Feed Generation:} For each active agent (viewer), a personalized content feed is generated by the \texttt{HybridFeedAlgorithm}. This feed is a mix of content from followed agents and "discovered" content from the wider network.
-    \item \textbf{Content Consumption and Belief Update:} Agents consume content from their feed. Upon exposure to a content item $\contentvec_c$, an agent $i$ updates their belief $\belief_i$.
-    \item \textbf{Influence Score Update:} Agents' $creator\_influence\_score$ is updated based on the engagement their content received.
-\end{enumerate}
+
+In each cycle $t$, the following events occur:
+
+1. Content Creation: A subset of agents create new content, with $C_c$ typically set to the creator’s current belief vector $B_i$.
+
+2. Feed Generation: For each agent $i$, a personalized feed is generated by the HybridFeedAlgorithm, which ranks available content.
+
+3. Content Consumption and Belief Update: Agents consume a limited number of items from their feed and update their beliefs according to Equation 2.
+
+4. Influence Score Update: $creator\_influence\_score_i$ is updated as a function of the positive engagement (e.g., likes) their content received. This models a form of cumulative advantage or preferential attachment, where past engagement increases the likelihood of future visibility [3].
 
 \subsection{The Algorithmic Feed Model}
-The \texttt{HybridFeedAlgorithm} is central to how algorithmic control is modeled. For a given viewer agent $V$ and a set of candidate content items $\mathcal{C}$, the algorithm ranks content based on a weighted sum of several scores:
+
+The HybridFeedAlgorithm is central to the model. For a given viewer agent $V$ and candidate content item $c$, the algorithm calculates a score:
+
 \begin{equation}
-    Score(\contentvec_c) = \wpers \cdot \Spers(V, \contentvec_c) + \wviral \cdot \Sviral(\contentvec_c) + \winflu \cdot \Sinflu(\contentvec_c) + \betaamp \cdot \text{Similarity}(\contentvec_c, \Starget)
+Score(C_c) = w_{pers} \cdot S_{pers}(V, C_c) + w_{viral} \cdot S_{viral}(C_c) + w_{influ} \cdot S_{influ}(C_c) + \beta_{amp} \cdot Sim(C_c, T)
 \end{equation}
+
 Where:
-\begin{itemize}
-    \item $\Spers(V, \contentvec_c) = 1 - \text{cosine\_distance}(\belief_V, \contentvec_c)$: The personalization score, reflecting how aligned the content is with the viewer's inferred belief.
-    \item $\Sviral(\contentvec_c) = |likes_c| - |dislikes_c|$: The virality score, based on the net engagement of the content.
-    \item $\Sinflu(\contentvec_c) = creator\_influence\_score_{creator(c)}$: The influence score of the content's creator.
-    \item $\wpers, \wviral, \winflu$: Configurable weights determining the relative importance of personalization, virality, and influence.
-    \item $\betaamp$: The \textbf{Targeted Amplification / Algorithmic Suppression} parameter. A positive $\betaamp$ boosts content similar to a \textbf{Target Opinion Vector} $\Starget$, while a negative $\betaamp$ suppresses it. This term directly models the "secret laws" of algorithmic control.
-\end{itemize}
+
+• $S_{pers}(V, C_c) = 1 - \cosine\ distance(B_V , C_c)$: The personalization score. Cosine similarity is used as it captures the alignment of belief vectors irrespective of their magnitude, a standard practice in vector-space models [22].
+
+• $S_{viral}(C_c) = |likes_c| - |dislikes_c|$: The virality score, based on net engagement.
+
+• $S_{influ}(C_c) = creator\_influence\_score_{creator(c)}$: The influence score of the content’s creator.
+
+• $w_{pers}, w_{viral}, w_{influ}$: Configurable weights determining the platform’s algorithmic priorities.
+
+• $\beta_{amp}$: The Targeted Amplification / Algorithmic Suppression parameter. A positive $\beta_{amp}$ boosts content similar to a Target Opinion Vector $T$, while a negative $\beta_{amp}$ suppresses it. This term explicitly models non-neutral platform governance. $Sim(\cdot, \cdot)$ is also calculated as $1 -$ cosine distance.
+
+A linear weighted sum was selected for the scoring function to create a transparent and interpretable model of algorithmic priorities, where the weights directly correspond to the relative importance a platform assigns to each factor.
 
 \subsection{Belief Update Mechanism}
-Upon consuming a content item $\contentvec_c$, an agent $i$'s belief $\belief_i$ is updated as follows:
+
+Upon consuming a content item $C_c$, a non-fused agent $i$’s belief is updated via a linear assimilation rule:
+
 \begin{equation}
-    \belief_{i, t+1} = \belief_{i, t} + \frac{\learningrate_i}{\conviction_i} \cdot (\contentvec_c - \belief_{i, t})
+B_{i,t+1} = B_{i,t} + \frac{\lambda_i}{\kappa_i} \cdot (C_c - B_{i,t})
 \end{equation}
-This is a simple linear update rule, where the agent's belief moves towards the content's topic vector. The magnitude of this shift is modulated by the agent's $\learningrate_i$ and inversely by their $\conviction_i$. Agents with "fused" beliefs ($is\_identity\_belief_i$) do not update their beliefs.
+
+This rule models social influence as a ``pull'' toward the position of consumed information, with the magnitude of the shift modulated by the agent’s psychological traits [7]. This linear assimilation rule was chosen for its tractability and direct comparability with foundational bounded confidence models [7, 11]. While it does not capture non-linear effects like motivated reasoning, it provides a robust baseline for measuring the first-order effects of algorithmic curation.
+
+\subsection{Model Parameterization}
+
+In the experiments described in this paper, agent parameters are drawn from distributions designed to represent a heterogeneous population (e.g., initial beliefs from a bimodal Gaussian mixture, $\lambda_i$ from a Beta distribution, and $\kappa_i$ from a Lognormal distribution). The platform archetypes available in the user interface provide pre-configured parameter sets that are conceptually grounded to facilitate exploration (e.g., a ``High-Trust Community'' features low average learning rates and high conviction). Formal calibration of these distributions to empirical data remains a key direction for future work, as detailed in Section 6.
 
 \section{The Digital Poiesis Laboratory Interface}
-\label{sec:interface}
-The interactive Streamlit interface serves as the primary access point to the model, designed to guide users through a structured workflow:
-\begin{itemize}
-    \item \textbf{The Digital Society:} Users select a platform archetype, defining the baseline parameters for the simulation.
-    \item \textbf{The Strategic Operations Center:} This page features a \textbf{Day 0 Preview} visualizing the initial belief distribution and network structure, including metrics like Network Assortativity. The \textbf{Algorithm Tuner} allows users to directly manipulate algorithmic weights and campaign parameters (e.g., Targeted Amplification, Bot Network Size, Kingmaker Effect).
-    \item \textbf{Post-Mortem Analysis:} Provides comprehensive visualizations of simulation outcomes, including the \textbf{Evolution of Public Opinion}, \textbf{Evolution of Reality Distortion} (quantifying the \textbf{Perception Gap}), and an \textbf{Agent Drill-Down} feature that allows inspection of individual agent trajectories and their personalized content exposure.
-    \item \textbf{Experiment Designer:} Enables systematic parameter sweeps to identify tipping points and dose-response relationships.
-\end{itemize}
-This interface transforms the formal ABM into an accessible and intuitive exploratory instrument.
 
-\section{A Use Case: Modeling Platform Archetypes}
-\label{sec:use_case}
-The model's utility is exemplified by its ability to represent distinct social media platform archetypes through configurable parameters. For instance, a "Facebook-like" platform might be characterized by high homophily and strong personalization weights, leading to slow-forming, entrenched echo chambers. In contrast, an "X-like" platform could feature lower homophily, higher virality weights, and more aggressive algorithmic amplification, resulting in faster, more volatile opinion shifts and "ideological firefights." By adjusting these parameters, the model allows for comparative analysis of how different platform designs influence opinion dynamics and the extent of reality distortion.
+To make this model accessible, we developed an interactive interface using Streamlit. The interface is a scientific instrument designed for exploration and pedagogy, guiding users through a structured workflow:
 
-\section{Discussion and Future Work}
-\label{sec:discussion}
-The Digital Poiesis Laboratory provides a robust framework for exploring algorithmic influence. However, like all models, it operates under simplifying assumptions that present avenues for future work. Current limitations include:
-\begin{itemize}
-    \item \textbf{Agent Psychology:} Agents currently lack sophisticated cognitive biases (e.g., confirmation bias, backfire effect) or emotional states. Future iterations could integrate more nuanced psychological models.
-    \item \textbf{Dynamic Networks:} The social graph is static. Allowing agents to dynamically form and dissolve connections based on evolving beliefs would enhance realism and enable the study of co-evolutionary dynamics between opinions and network structure.
-    \item \textbf{Content Nuance:} Content is abstracted as a vector. Incorporating semantic analysis, emotional valence, or different media types could enrich the content model.
-    \item \textbf{Empirical Calibration:} While the model is conceptually grounded, formal academic application would benefit from rigorous calibration against real-world social media data to validate its parameters and emergent behaviors.
-\end{itemize}
-Addressing these limitations would further enhance the model's fidelity and expand its utility for academic research.
+• The Digital Society: Users select a platform archetype (e.g., ``High-Trust Community,'' ``Polarizing Firehose'') which pre-loads a set of baseline parameters.
+
+• The Strategic Operations Center: This page provides a Day 0 Preview of the initial state, including belief distributions and network metrics (e.g., Assortativity). The Algorithm Tuner allows users to directly manipulate the parameters from Equation 1 and deploy strategic interventions (e.g., bot networks, ``kingmaker'' amplification).
+
+• Post-Mortem Analysis: Provides a suite of interactive visualizations for analyzing simulation outcomes. This includes longitudinal plots of opinion evolution and polarization, and crucially, visualizations of the Perception Gap—the difference between agents’ beliefs and the average ideology of the content they are shown.
+
+• Experiment Designer: Enables systematic, multi-run experiments to map the effects of a parameter across a range of values, allowing for the identification of tipping points and non-linear effects.
+
+Code Availability: The complete source code for the simulation engine and the Streamlit interface is available under an MIT license at: \url{https://github.com/APAbdollahi/Poiesis4}. The application is deployed at \url{https://poiesis4.streamlit.io}.
+
+\section{Illustrative Use Case: Modeling Platform Archetypes}
+
+To demonstrate the model’s utility, we can conduct an illustrative experiment comparing two platform archetypes.
+
+• Archetype A (``Facebook-like''): Characterized by high network homophily and a high personalization weight ($w_{pers}$). In simulation, this archetype typically gives rise to entrenched echo chambers over time. Opinion change is slow, but clusters become highly segregated, and the average Perception Gap remains relatively small as users mostly see content aligned with their community’s beliefs.
+
+• Archetype B (``X-like''): Characterized by lower network homophily (more random connections) and higher weights on virality ($w_{viral}$) and targeted amplification ($\beta_{amp}$). This scenario produces more volatile opinion dynamics. ``Ideological firefights'' can erupt as viral content rapidly crosses community boundaries. If a strong $\beta_{amp}$ is active, a large Perception Gap can emerge, as the algorithm systematically exposes a large portion of the population to a specific narrative, regardless of their organic beliefs.
+
+This comparative analysis, easily conducted within the interface, allows for the generation of clear, mechanistic hypotheses about how different platform design choices can lead to vastly different societal outcomes.
+
+\section{Discussion, Limitations, and Future Work}
+
+The Digital Poiesis Laboratory provides a robust and transparent framework for exploring algorithmic influence. However, like all models, it is a simplification of reality. We outline its limitations and corresponding avenues for future research.
+
+\subsection{Limitations}
+
+The primary limitations are:
+
+1. Simplified Agent Psychology: The current model does not include more sophisticated cognitive biases. Agents are not strategic in their information consumption beyond the curation provided by the platform.
+
+2. Static Social Network: The social graph does not evolve over the course of the simulation. Real-world users form and sever ties in response to interactions and changing beliefs.
+
+3. Abstract Content Model: Content is abstracted as a point in ideological space, lacking features like topic, media type, veracity, or emotional valence.
+
+4. Lack of Empirical Calibration: The model is conceptually grounded, but its parameters have not been rigorously calibrated against empirical data from real-world platforms.
+
+\subsection{Future Work}
+
+We are actively pursuing several extensions to address these limitations:
+
+• Richer Agent Psychology: Future iterations will incorporate cognitive biases by modifying the belief update rule. For instance, a confirmation bias could be modeled by increasing $\lambda_i$ when the distance $\Vert B_{i,t} - C_c \Vert$ is small, and a ``backfire effect'' [17] could be modeled by a repulsive force when the distance is very large.
+
+• Dynamic Networks: We plan to implement network co-evolution, where in each cycle, agents have a small probability of dropping links with ideologically distant agents and forming new links with similar ones, allowing for the study of endogenous echo chamber formation [13].
+
+• Empirical Grounding: A major goal is to calibrate the model using empirical data. By fitting model parameters to reproduce aggregate statistics (e.g., network assortativity, opinion distributions) from a specific platform, we can generate more targeted and validated insights. This process, known as model validation, is a critical step in establishing the credibility and explanatory power of any simulation [23].
+
+\subsection{Implications}
+
+For policymakers and regulators, the laboratory serves as a ``flight simulator'' to explore the potential consequences of digital policies before implementation. For instance, users can test the systemic effects of mandating a reduction in personalization ($w_{pers}$) or suppressing targeted amplification ($\beta_{amp}$). Beyond specific interventions, the tool fosters a deeper, mechanistic literacy about the concepts that govern modern information ecosystems, enabling more informed oversight and questioning of platform operators.
+
+For platform designers and trust-and-safety teams, the model offers a framework for proactive ``algorithmic auditing.'' By simulating the effects of a proposed change to a feed algorithm before public deployment, designers can prospectively identify and mitigate potentially harmful emergent behaviors, such as runaway polarization or the creation of severe perception gaps. This provides a sandbox environment to better align platform mechanics with public interest values and responsible innovation.
+
+For researchers in computational social science, the Digital Poiesis Laboratory provides a transparent, open-source baseline model. Its modular design allows it to serve as a foundation for building and testing more complex theories of online social behavior—for instance, by integrating alternative belief update mechanisms or dynamic network models. Furthermore, it functions as a powerful instrument for generating clear, falsifiable hypotheses about the causal impact of specific algorithmic variables, which can then guide empirical research designs.
 
 \section{Conclusion}
-\label{sec:conclusion}
-The Digital Poiesis Laboratory offers a transparent, interactive agent-based model for investigating the complex interplay of network structure, algorithmic curation, and agent psychology in shaping online opinion dynamics. By making the "secret laws" of algorithmic influence observable and auditable, it serves as an invaluable tool for building mechanistic intuition among policymakers, researchers, and the public. This work contributes to the growing field of computational social science by providing an accessible platform for exploring the profound impact of digital technologies on our shared social realities.
 
-\bibliographystyle{plainnat} % Or another style like unsrtnat, abbrvnat
-\bibliography{references} % The name of your .bib file
+In an era defined by algorithmically-mediated communication, understanding the mechanisms that shape our shared social realities is of paramount importance. The Digital Poiesis Laboratory offers a transparent, interactive, and theoretically-grounded agent-based model for this purpose. By integrating network structure, algorithmic curation, and agent psychology, it provides an invaluable tool for building mechanistic intuition among policymakers, researchers, and the public. This work contributes to the growing field of computational social science by providing an accessible platform for exploring, and ultimately contending with, the profound impact of digital technologies on democratic discourse and social cohesion.
+
+\begin{thebibliography}{23}
+
+\bibitem[1]{adamic2005} Lada A Adamic and Natalie Glance. The political blogosphere and the 2004 us election: divided they blog. In proceedings of the 3rd international workshop on Link discovery, pages 36–43, 2005.
+
+\bibitem[2]{bail2018} Christopher A Bail. Harnessing the power of computational social science for the study of social and political division. Annual Review of Sociology, 44:23–41, 2018.
+
+\bibitem[3]{barabasi1999} Albert-L\'{a}szl\'{o} Barab\'{a}si and R\'{e}ka Albert. Emergence of scaling in random networks. science, 286 (5439):509–512, 1999.
+
+\bibitem[4]{berger1966} Peter L Berger and Thomas Luckmann. The social construction of reality: A treatise in the sociology of knowledge. Anchor Books, 1966.
+
+\bibitem[5]{castellano2009} Claudio Castellano, Santo Fortunato, and Vittorio Loreto. Statistical physics of social dynamics. Reviews of modern physics, 81(2):591, 2009.
+
+\bibitem[6]{cinelli2021} Matteo Cinelli, Gianmarco De Francisci Morales, Alessandro Galeazzi, Walter Quattrociocchi, and Michele Starnini. The echo chamber is overblown: A meta-analysis of the literature. Scientific reports, 11(1):1–12, 2021.
+
+\bibitem[7]{deffuant2000} Guillaume Deffuant, David Neau, Frederic Amblard, and G\'{e}rard Weisbuch. Mixing beliefs among interacting agents. Advances in Complex Systems, 3(01n04):87–98, 2000.
+
+\bibitem[8]{eady2023} Glenn Eady, Andrew M Guess, Brendan Nyhan, and Jason Reifler. Algorithmic amplification of political content on social media: A review. Proceedings of the National Academy of Sciences, 120 (10):e2216422120, 2023.
+
+\bibitem[9]{epstein2008} Joshua M Epstein. Why model? Journal of artificial societies and social simulation, 11(4):12, 2008.
+
+\bibitem[10]{flache2017} Andreas Flache, Michael M\"{a}s, Thomas Feliciani, Edmund Chattoe-Brown, Guillaume Deffuant, Sylvie Huet, and Jan Lorenz. Models of social influence: Towards the next frontiers. Journal of Artificial Societies and Social Simulation, 20(4):2, 2017.
+
+\bibitem[11]{hegselmann2002} Rainer Hegselmann and Ulrich Krause. Opinion dynamics and bounded confidence models, analysis, and simulation. Journal of artificial societies and social simulation, 5(3), 2002.
+
+\bibitem[12]{holley1975} Richard A Holley and Thomas M Liggett. Ergodic theorems for weakly interacting infinite systems and the voter model. The annals of probability, pages 643–663, 1975.
+
+\bibitem[13]{holme2006} Petter Holme and Mark EJ Newman. Nonequilibrium dynamics of network coevolution. Physical Review E, 74(5):056108, 2006.
+
+\bibitem[14]{kunda1990} Ziva Kunda. The case for motivated reasoning. Psychological bulletin, 108(3):480, 1990.
+
+\bibitem[15]{mcpherson2001} Miller McPherson, Lynn Smith-Lovin, and James M Cook. Birds of a feather: Homophily in social networks. Annual review of sociology, 27(1):415–444, 2001.
+
+\bibitem[16]{nickerson1998} Raymond S Nickerson. Confirmation bias: A ubiquitous phenomenon in many guises. Review of general psychology, 2(2):175–220, 1998.
+
+\bibitem[17]{nyhan2010} Brendan Nyhan and Jason Reifler. When corrections fail: The persistence of political misperceptions. Political Behavior, 32(2):303–330, 2010.
+
+\bibitem[18]{pariser2011} Eli Pariser. The filter bubble: What the Internet is hiding from you. Penguin UK, 2011.
+
+\bibitem[19]{sunstein2018} Cass R Sunstein. \# Republic: Divided democracy in the age of social media. Princeton University Press, 2018.
+
+\bibitem[20]{swann2014} William B Swann Jr, Jolanda Jetten, \'Angel G\'omez, Harvey Whitehouse, and Brock Bastian. What is identity fusion? Current directions in psychological science, 23(2):103–108, 2014.
+
+\bibitem[21]{sznajd2000} Katarzyna Sznajd-Weron and J\'ozef Sznajd. Opinion evolution in closed community. International journal of modern physics C, 11(06):1157–1165, 2000.
+
+\bibitem[22]{turney2010} Peter D Turney and Patrick Pantel. From frequency to meaning: Vector space models of semantics. Journal of artificial intelligence research, 37:141–188, 2010.
+
+\bibitem[23]{windrum2007} Paul Windrum, Giorgio Fagiolo, and Alessio Moneta. Empirical validation of agent-based models: Alternatives and prospects. Journal of Artificial Societies and Social Simulation, 10(2):8, 2007.
+
+\end{thebibliography}
 
 \end{document}
