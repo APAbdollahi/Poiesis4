@@ -1,5 +1,1 @@
-[0] Config.pm:328> INFO - This is Biber 2.21
-[0] Config.pm:331> INFO - Logfile is 'Digital_Poiesis_Lab_Paper.blg'
-[77] biber-darwin:342> INFO - === Fri Oct 10, 2025, 14:26:58
-[107] Utils.pm:479> ERROR - Cannot find 'Digital_Poiesis_Lab_Paper.bcf'!
-[107] Biber.pm:137> INFO - ERRORS: 1
+
