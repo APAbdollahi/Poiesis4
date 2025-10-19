@@ -43,9 +43,10 @@ class Agent:
         self.exposure_log = []
 
     def create_post(self, current_cycle):
-        return Content(self.agent_id, self.belief_vector, current_cycle)
+        return Content(self.agent_id, self.belief_vector.copy(), current_cycle)
 
     def update_belief(self, content):
+        """Update agent's belief based on consumed content using linear assimilation."""
         if self.psychology.get('is_identity_belief', False):
             return # Identity-fused agents don't change beliefs
 
@@ -55,6 +56,27 @@ class Agent:
         # Move belief towards content vector, slowed by conviction
         self.belief_vector += (learning_rate / conviction) * (content.topic_vector - self.belief_vector)
         self.belief_vector = np.clip(self.belief_vector, -1, 1)
+    
+    def engage_with_content(self, content, engagement_probability=0.3):
+        """
+        Agent engages with content (likes/dislikes) based on alignment with their beliefs.
+        Higher alignment = more likely to like.
+        """
+        if self.is_bot:
+            return  # Bots don't engage organically
+        
+        # Calculate alignment: closer beliefs = higher alignment
+        distance = np.linalg.norm(self.belief_vector - content.topic_vector)
+        alignment = max(0, 1 - distance / 2.0)  # Normalize to [0, 1]
+        
+        # Decide to engage based on probability
+        if random.random() < engagement_probability:
+            # Like if aligned, dislike if opposed
+            if alignment > 0.5:
+                content.engagement['likes'].add(self.agent_id)
+                self.liked_content_history.append(content.content_id)
+            elif alignment < 0.3:
+                content.engagement['dislikes'].add(self.agent_id)
 
 class SocialGraph:
     def __init__(self):
@@ -131,24 +153,61 @@ class WorldGenerator:
                             graph.add_follow_edge(agent1.agent_id, agent2.agent_id)
         return graph
 
+def safe_cosine_similarity(v1, v2):
+    """
+    Compute cosine similarity (not distance) with zero-vector handling.
+    Returns a value in [-1, 1] where 1 is perfect alignment.
+    """
+    norm1, norm2 = np.linalg.norm(v1), np.linalg.norm(v2)
+    if norm1 == 0 or norm2 == 0:
+        return 0.0
+    similarity = np.dot(v1, v2) / (norm1 * norm2)
+    return similarity
+
 class BaseAlgorithm:
     def __init__(self, params): self.params = params
     def rank_feed(self, viewer, candidates, population, social_graph): raise NotImplementedError
 
 class HybridFeedAlgorithm(BaseAlgorithm):
     def rank_feed(self, viewer, candidates, population, social_graph):
-        scores = []
+        """
+        Rank content using the hybrid scoring function from the paper.
+        Returns sorted list of content items.
+        """
+        if not candidates:
+            return []
+        
+        candidate_scores = []
+        w = self.params['weights']
+        
         for content in candidates:
             creator = population[content.creator_id]
-            w = self.params['weights']
-            pers_score = 1 - cosine(viewer.platform_profile['inferred_belief_vector'], content.topic_vector)
+            
+            # Personalization score: using cosine similarity (1 = perfect match)
+            pers_score = (1 + safe_cosine_similarity(viewer.belief_vector, content.topic_vector)) / 2.0
+            
+            # Virality score: net engagement
             viral_score = len(content.engagement['likes']) - len(content.engagement['dislikes'])
+            
+            # Influence score: creator's accumulated influence
             influ_score = creator.platform_profile['creator_influence_score']
-            final_score = (w['w_personalization'] * pers_score) + (w['w_virality'] * viral_score) + (w['w_influence'] * influ_score)
+            
+            # Base score from weighted sum
+            final_score = (w['w_personalization'] * pers_score) + \
+                         (w['w_virality'] * viral_score) + \
+                         (w['w_influence'] * influ_score)
+            
+            # Targeted amplification (β_amp from paper)
             if 'amplification_bias_strength' in self.params and self.params['amplification_bias_strength'] != 0:
-                final_score += self.params['amplification_bias_strength'] * (1 - cosine(content.topic_vector, self.params['target_opinion_vector']))
-            scores.append(final_score)
-        return sorted(candidates, key=lambda c: scores[candidates.index(c)], reverse=True)
+                target_alignment = (1 + safe_cosine_similarity(content.topic_vector, 
+                                                               self.params['target_opinion_vector'])) / 2.0
+                final_score += self.params['amplification_bias_strength'] * target_alignment
+            
+            candidate_scores.append((content, final_score))
+        
+        # Sort by score (descending) and return just the content objects
+        candidate_scores.sort(key=lambda x: x[1], reverse=True)
+        return [content for content, score in candidate_scores]
 
 ALGORITHM_REGISTRY = {"HybridFeedAlgorithm": HybridFeedAlgorithm}
 
@@ -157,74 +216,158 @@ class SimulationEngine:
         random.seed(master_seed)
         np.random.seed(master_seed)
 
-        self.population = population; self.social_graph = social_graph; self.config = config
+        self.population = population
+        self.social_graph = social_graph
+        self.config = config
         self.N = len(population)
         algorithm_class = ALGORITHM_REGISTRY[config['engine_settings']['algorithm_class']]
         self.algorithm = algorithm_class({**config['algorithm_params'], **config.get('campaign_params', {})})
-        self.all_content = {}; self.current_cycle = 0
+        self.all_content = {}
+        self.current_cycle = 0
         self._apply_initial_conditions()
 
     def _apply_initial_conditions(self):
-        # Apply psychology and strategic elements to the generated population
-        agent_indices = list(range(self.N)); random.shuffle(agent_indices)
+        """Apply psychology and strategic elements to the generated population."""
+        agent_indices = list(range(self.N))
+        random.shuffle(agent_indices)
         psych_params = self.config['agent_psychology']
+        
+        # Apply identity fusion to a percentage of agents
         num_identity = int(self.N * psych_params['identity_fusion_pct'])
         identity_indices = set(random.sample(agent_indices, num_identity))
-        for i in identity_indices: self.population[i].psychology['is_identity_belief'] = True
+        for i in identity_indices:
+            self.population[i].psychology['is_identity_belief'] = True
 
         campaign_params = self.config.get('campaign_params', {})
+        
+        # Create bot network
         num_bots = campaign_params.get('num_bots', 0)
         bot_indices = set(agent_indices[:num_bots])
         for i in bot_indices:
             self.population[i].is_bot = True
             self.population[i].belief_vector = np.array(campaign_params['target_opinion_vector'])
 
+        # FIX: Implement defensive campaign "radicalize majority" feature
+        if 'majority_identity_fusion' in campaign_params:
+            majority_vector = np.array(self.config['majority_opinion_vector'])
+            # Find agents in the majority camp
+            majority_agents = [p for p in self.population 
+                             if not p.is_bot and 
+                             np.linalg.norm(p.belief_vector - majority_vector) < 0.5]
+            
+            # Radicalize a percentage of them
+            num_to_radicalize = int(len(majority_agents) * campaign_params['majority_identity_fusion'])
+            if num_to_radicalize > 0 and majority_agents:
+                for agent in random.sample(majority_agents, min(num_to_radicalize, len(majority_agents))):
+                    agent.psychology['is_identity_belief'] = True
+
+        # Kingmaker intervention: boost influence of aligned creators
         if campaign_params.get('kingmaker_strength', 1.0) > 1.0:
-            potential_kings = [p for p in self.population if not p.is_bot and cosine(p.belief_vector, campaign_params['target_opinion_vector']) < 0.2]
+            target_vector = np.array(campaign_params['target_opinion_vector'])
+            potential_kings = [p for p in self.population 
+                             if not p.is_bot and 
+                             safe_cosine_similarity(p.belief_vector, target_vector) > 0.8]
+            
             if potential_kings:
-                for king in random.sample(potential_kings, min(campaign_params['kingmaker_num'], len(potential_kings))):
+                num_kings = min(campaign_params.get('kingmaker_num', 2), len(potential_kings))
+                for king in random.sample(potential_kings, num_kings):
                     king.platform_profile['creator_influence_score'] *= campaign_params['kingmaker_strength']
 
     def run_single_cycle(self):
+        """Execute one cycle of the simulation."""
         content_created_this_cycle = []
+        
+        # Content creation phase
         num_posters = int(self.N * self.config['agent_psychology']['posting_propensity'])
-        poster_indices = [p.agent_id for p in self.population if p.is_bot] + list(np.random.permutation([p.agent_id for p in self.population if not p.is_bot]))[:num_posters]
-        for poster_id in poster_indices:
+        # Bots always post, plus random selection of human agents
+        bot_posters = [p.agent_id for p in self.population if p.is_bot]
+        human_posters = [p.agent_id for p in self.population if not p.is_bot]
+        selected_posters = bot_posters + list(np.random.choice(human_posters, 
+                                                               size=min(num_posters, len(human_posters)), 
+                                                               replace=False))
+        
+        for poster_id in selected_posters:
             new_content = self.population[poster_id].create_post(self.current_cycle)
-            self.all_content[new_content.content_id] = new_content; content_created_this_cycle.append(new_content)
+            self.all_content[new_content.content_id] = new_content
+            content_created_this_cycle.append(new_content)
+        
+        # Content consumption and engagement phase
         for viewer in self.population:
-            if viewer.is_bot: continue
+            if viewer.is_bot:
+                continue  # Bots don't consume content
+            
+            # Get content from followed accounts (organic feed)
             followed = self.social_graph.get_followed_by(viewer.agent_id)
             follower_content = [c for c in content_created_this_cycle if c.creator_id in followed]
-            discovery_candidates = [c for c in content_created_this_cycle if c.creator_id not in followed and c.creator_id != viewer.agent_id]
-            discovery_content = self.algorithm.rank_feed(viewer, discovery_candidates, self.population, self.social_graph)
-            feed_size = viewer.attention_budget; disco_ratio = self.config['algorithm_params']['discovery_feed_ratio']
-            num_discovery = int(feed_size * disco_ratio); num_follower = feed_size - num_discovery
-            final_feed = follower_content[:num_follower] + discovery_content[:num_discovery]; random.shuffle(final_feed)
+            
+            # Get discovery content (algorithmic feed)
+            discovery_candidates = [c for c in content_created_this_cycle 
+                                  if c.creator_id not in followed and c.creator_id != viewer.agent_id]
+            discovery_content = self.algorithm.rank_feed(viewer, discovery_candidates, 
+                                                        self.population, self.social_graph)
+            
+            # Compose final feed
+            feed_size = viewer.attention_budget
+            disco_ratio = self.config['algorithm_params']['discovery_feed_ratio']
+            num_discovery = int(feed_size * disco_ratio)
+            num_follower = feed_size - num_discovery
+            
+            # FIX: Backfill with discovery if not enough follower content
+            final_feed = follower_content[:num_follower]
+            remaining_slots = feed_size - len(final_feed)
+            final_feed += discovery_content[:max(num_discovery, remaining_slots)]
+            
+            random.shuffle(final_feed)
+            
+            # Consume and engage with feed
             for content in final_feed:
-                viewer.exposure_log.append(content.topic_vector)
+                viewer.exposure_log.append(content.topic_vector.copy())
                 viewer.update_belief(content)
-        self._update_influence_scores(); self.current_cycle += 1
+                
+                # FIX: Add engagement mechanics
+                viewer.engage_with_content(content, engagement_probability=0.3)
+        
+        self._update_influence_scores()
+        self.current_cycle += 1
 
     def _update_influence_scores(self):
+        """
+        Update creator influence scores based on recent engagement.
+        FIX: Only count likes from the current cycle, not all-time.
+        """
         for agent in self.population:
             if not agent.is_bot:
-                likes_on_my_content = sum([len(c.engagement['likes']) for c in self.all_content.values() if c.creator_id == agent.agent_id])
-                agent.platform_profile['creator_influence_score'] = (agent.platform_profile['creator_influence_score'] * 0.9) + (likes_on_my_content * 0.1)
+                # Count likes on content created THIS cycle
+                likes_this_cycle = sum([
+                    len(c.engagement['likes']) 
+                    for c in self.all_content.values() 
+                    if c.creator_id == agent.agent_id and c.creation_time == self.current_cycle
+                ])
+                
+                # Exponential moving average with decay
+                decay = 0.95
+                boost = 0.5
+                agent.platform_profile['creator_influence_score'] = \
+                    (agent.platform_profile['creator_influence_score'] * decay) + (likes_this_cycle * boost)
 
     def get_stats(self):
-        human_agents = [p for p in self.population if not p.is_bot];
-        if not human_agents: return {}
+        """Calculate and return aggregate statistics for the current state."""
+        human_agents = [p for p in self.population if not p.is_bot]
+        if not human_agents:
+            return {}
         
         belief_matrix = np.array([agent.belief_vector for agent in human_agents])
         dist_to_maj = np.linalg.norm(belief_matrix - self.config['majority_opinion_vector'], axis=1)
         dist_to_min = np.linalg.norm(belief_matrix - self.config['minority_opinion_vector'], axis=1)
         
-        # Calculate Perception Gap
+        # Calculate Perception Gap (Reality Distortion Index)
+        # FIX: Use windowed exposure history to avoid unbounded growth
         perception_gaps = []
         for agent in human_agents:
             if agent.exposure_log:
-                perceived_reality = np.mean(agent.exposure_log, axis=0)
+                # Use recent exposure (last 100 items) to calculate perceived reality
+                recent_exposure = agent.exposure_log[-100:]
+                perceived_reality = np.mean(recent_exposure, axis=0)
                 gap = np.linalg.norm(agent.belief_vector - perceived_reality)
                 perception_gaps.append(gap)
         
