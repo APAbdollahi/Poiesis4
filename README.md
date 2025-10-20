@@ -1,6 +1,7 @@
 # Digital Poiesis Laboratory
 
 An interactive agent-based modeling framework for exploring algorithmic influence on opinion dynamics.
+https://doi.org/10.5281/zenodo.17396536
 
 ## Overview
 
