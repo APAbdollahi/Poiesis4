@@ -300,9 +300,9 @@ MIT License - See LICENSE file for details
 
 ## Contact
 
-- Author: Pasha Abdollahi
-- Email: pasha.abdollahi@example.com
-- Repository: https://github.com/yourusername/Digital-Poiesis-Lab
+- Author: Ali Pasha Abdollahi, Farzaneh Khandani
+- Email: Ali.abdollahi@alumni.manchester.ac.uk
+- Repository: https://github.com/APAbdollahi/Poiesis4.git
 
 ## Acknowledgments
 
