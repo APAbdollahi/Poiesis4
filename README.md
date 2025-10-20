@@ -93,15 +93,15 @@ Page 4: Experiment Designer - Systematic parameter sweeps
 
 
 
-Quick Start Example
+##Quick Start Example
 
-Configure Your World (Page 1)
+##Configure Your World (Page 1)
 
-Choose "Facebook-like" or "X-like" platform archetype
+###Choose "Facebook-like" or "X-like" platform archetype
 Review the core parameters
 
 
-Run a Campaign (Page 2)
+###Run a Campaign (Page 2)
 
 Set campaign duration (e.g., 30 cycles)
 Choose number of participants (e.g., 200 agents)
@@ -115,7 +115,7 @@ Adjust algorithm weights (personalization, virality, influence)
 Click "Launch Campaign"
 
 
-Analyze Results (Page 3)
+###Analyze Results (Page 3)
 
 View final belief distribution
 Examine perception gaps (reality distortion)
@@ -123,7 +123,7 @@ Drill down into individual agent experiences
 Compare multiple runs using A/B testing
 
 
-Run Experiments (Page 4)
+###Run Experiments (Page 4)
 
 Select a parameter to sweep (e.g., "Targeted Amplification")
 Set range and number of trials
@@ -131,7 +131,7 @@ Discover tipping points and dose-response relationships
 
 
 
-Project Structure
+###Project Structure
 Digital-Poiesis-Lab/
 ├── Digital_Poiesis_Lab.py          # Main entry point
 ├── simulation_engine.py             # Core ABM implementation
@@ -149,7 +149,7 @@ Digital-Poiesis-Lab/
 Model Architecture
 Core Components
 
-Agents
+##Agents
 
 Belief vectors in 2D opinion space [-1, 1]²
 Psychology: learning rate, conviction, identity fusion
@@ -157,21 +157,21 @@ Platform profile: inferred beliefs, influence score
 Attention budget and exposure history
 
 
-Content
+##Content
 
 Topic vectors in shared belief space
 Creator and timestamp
 Engagement metrics (likes, dislikes, shares)
 
 
-Social Graph
+##Social Graph
 
 Directed network (follows)
 Homophily-driven generation
 Static structure (dynamic networks in future work)
 
 
-Hybrid Feed Algorithm
+##Hybrid Feed Algorithm
 
 Weighted scoring: personalization + virality + influence
 Targeted amplification (β_amp) for non-neutral governance
@@ -179,7 +179,7 @@ Configurable discovery/follower content ratio
 
 
 
-Key Equations
+##Key Equations
 Belief Update (Equation 2 from paper):
 B[i, t+1] = B[i,t] + (λ_i / κ_i) * (C_c - B[i,t])
 Where:
@@ -205,7 +205,7 @@ High discovery ratio (50%)
 Loose homophily (threshold = 0.7)
 Effect: Volatile dynamics, ideological firefights
 
-Campaign Types
+###Campaign Types
 Offensive Campaign
 Goal: Flip majority opinion from Camp A to Camp B
 Tactics:
@@ -230,17 +230,17 @@ Opinion Metrics
 Pct in Majority Camp: % of agents closer to majority opinion vector
 Polarization: Variance of belief distributions
 
-Distortion Metrics
+###Distortion Metrics
 
 Reality Distortion Index: Average perception gap across agents
 Perception Gap: ||Agent's belief - Average content seen||
 
-Network Metrics
+###Network Metrics
 
 Assortativity: Degree to which similar agents are connected
 Network density: Number of edges relative to possible edges
 
-Configuration Files
+###Configuration Files
 Platform configurations are JSON files in the configs/ directory. Each includes:
 json{
   "platform_name": "Platform Name",
@@ -267,14 +267,14 @@ json{
     ...
   }
 }
-Creating Custom Archetypes
+###Creating Custom Archetypes
 
 Copy an existing config file
 Modify parameters to reflect your platform design
 Save in configs/ directory with .json extension
 Restart the app to load new archetype
 
-Known Limitations
+###Known Limitations
 As documented in the paper (Section 6):
 
 Simplified Agent Psychology: No confirmation bias, backfire effects, or motivated reasoning
@@ -282,7 +282,7 @@ Static Networks: No dynamic link formation/deletion
 Abstract Content: No topic modeling, media types, or veracity
 No Empirical Calibration: Parameters are conceptually grounded but not fitted to real data
 
-Future Work
+###Future Work
 
  Dynamic network co-evolution
  Richer cognitive biases (confirmation bias, backfire effect)
