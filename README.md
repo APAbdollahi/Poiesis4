@@ -3,14 +3,11 @@
 An interactive agent-based modeling framework for exploring algorithmic influence on opinion dynamics.
 https://doi.org/10.5281/zenodo.17396536
 
-## Paper
-
-You can find the paper at: https://ssrn.com/abstract=5628710
 
 
 ## Overview
 
-The Digital Poiesis Laboratory is a "flight simulator" for digital policy, providing a transparent and auditable environment to investigate the consequences of platform design and strategic interventions. This implementation accompanies the research paper "The Digital Poiesis Laboratory: An Agent-Based Model for Exploring Algorithmic Influence on Opinion Dynamics."
+The Digital Poiesis Laboratory is a "flight simulator" for digital policy, providing a transparent and auditable environment to investigate the consequences of platform design and strategic interventions. This implementation accompanies the research paper "The Digital Poiesis Laboratory: An Agent-Based Model for Exploring Algorithmic Influence on Opinion Dynamics." https://ssrn.com/abstract=5628710
 
 ## Explore Digital Poiesis Lab Online
 
