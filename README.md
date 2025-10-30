@@ -287,7 +287,8 @@ Contributions are welcome! Areas of particular interest:
 
 If you use this tool in your research, please cite:
 
-```@article{abdollahi2025digital,
+```bibtex
+@article{abdollahi2025digital,
   title={The Digital Poiesis Laboratory: An Agent-Based Model for Exploring Algorithmic Influence on Opinion Dynamics},
   author={Abdollahi, Ali Pasha and Khandani, Farzaneh},
   year={2025},
