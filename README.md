@@ -287,13 +287,15 @@ Contributions are welcome! Areas of particular interest:
 
 If you use this tool in your research, please cite:
 
-```bibtex
-@article{abdollahi2025poiesis,
+```@article{abdollahi2025digital,
   title={The Digital Poiesis Laboratory: An Agent-Based Model for Exploring Algorithmic Influence on Opinion Dynamics},
-  author={Abdollahi, Ali Pasha, Khandani, Farzaneh},
-  journal={Preprint},
-  year={2025}
+  author={Abdollahi, Ali Pasha and Khandani, Farzaneh},
+  year={2025},
+  month={October},
+  publisher={Social Science Research Network},
+  url={https://ssrn.com/abstract=5628710}
 }
+
 ```
 
 ## License
